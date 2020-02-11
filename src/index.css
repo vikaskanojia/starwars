@@ -11,3 +11,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.planet{width: 100px; border-radius: 50%; height: 100px; background-color: cadetblue; display: flex;
+  justify-content: center;
+  align-items: center;}
