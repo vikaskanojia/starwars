@@ -1,46 +1,46 @@
-import { call, put, takeLatest, all } from 'redux-saga/effects'
+import { call, put, takeLatest } from 'redux-saga/effects';
+import { fetchData, loginServices } from './services';
+import { SET_PLANET_DATA_FNC } from './actions';
 
 function* fetchDetails(action) {
+    let response = null;
     try  {
-        const response = yield call( fetch, `https://swapi.co/api/people/?search=${action.userDetails.userName.toLowerCase()}`);
-        const responseBody = yield response.json();
-        if (responseBody.results[0].birth_year === action.userDetails.password ) {
-            yield put({type: 'NEWDATA', Data: responseBody, userDetail: action.userDetails, redirectPath : '/search'});
-            localStorage.setItem('starWars', JSON.stringify({isLogin : true, ...responseBody}));
+        response = yield call (loginServices, action);
+        response = yield response.json();
+    }
+    catch (e) {
+        console.log(e);
+        return;
+    } finally {
+        if (response.results[0].birth_year === action.userDetails.password ) { // birth year 19BBY
+            yield put({type: 'NEWDATA', payload: { data: response, userDetail: action.userDetails, redirectPath : '/search'}});
+            localStorage.setItem('starWars', JSON.stringify({isLogin : true, ...response}));
             window.location.href = '/search';
         } else {
-         yield put({type: 'NEWDATA', Data: {error: 'Please Enter Correct user Name and Password'}, userDetail: action.userDetails});
+         yield put({type: 'NEWDATA', payload:{data: {error: 'Please Enter Correct user Name and Password'}, userDetail: action.userDetails}});
         }
     }
-    catch (e) {
-        console.log(e);
-        return;
-    }
 }
 
-function* fetchPlanetList(action) {
+function* fetchPlanetList() {
+    let responseBody = null;
     try  {
-        const response = yield call( fetch, `https://swapi.co/api/planets/`);
-        const responseBody = yield response.json();
-        yield put({type: 'PLANET_DATA', Data: responseBody});
+        const response = yield call(fetchData);
+        responseBody = yield response.json();
+        
     }
     catch (e) {
         console.log(e);
         return;
+    } finally {
+        if(!!responseBody){
+            yield put (SET_PLANET_DATA_FNC(responseBody));
+        }
     }
 }
 
-function* getUserData () {
-    yield takeLatest ( 'LOGIN_USER', fetchDetails);
-}
 
-function* getPlanetData () {
+export default function*  watcherSaga() {
     yield takeLatest ( 'SEARCH_PLANET', fetchPlanetList);
-}
-
-export default function* () {
-    yield all([
-        getUserData(),
-        getPlanetData()
-    ]);
+    yield takeLatest ( 'LOGIN_USER', fetchDetails);
 }

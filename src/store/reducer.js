@@ -1,25 +1,52 @@
-const todoApp = (state={}, action) => {
-	switch (action.type) {
-		case 'NEWDATA' : 
-			return {  ...state, apiData: action.Data}
-		case 'LOGIN_USER' :
-			return {  ...state, apiData: action.Data}
-		case 'PLANET_DATA' :
-			return {...state, apiData: action.Data, forFilter: action.Data}
-		case 'LOG_OUT' :
+
+import produce from 'immer';
+
+// This will be seprate file
+const commonState = ()=>({
+	count: 0,
+	apiData: '',
+	flteredData: ''
+});
+
+// This will be seprate file
+const withProduce = (initialState, reducers) => produce((state = initialState(), { type, payload }) => {
+		if (reducers[type]) {
+			reducers[type](state, payload);
+		}
+	
+		return state;
+	  });
+
+// This will be seprate file
+const reducer = {
+		'NEWDATA' : (state, payload) => {
+			state.apiData = payload.data;
+		},
+		'SET_PLANET_DATA' : (state, payload) => {
+			if(!!payload){
+				state.apiData = payload.results;
+				state.flteredData = payload.results;
+			}
+		},
+
+		'LOG_OUT' : () => {
 			localStorage.removeItem('starWars');
 			window.location.href = '/';
-		case 'FIND_PLANET' :
-			let filteredList = !!state.forFilter ? state.forFilter.results : [];
+		},
+
+		'FIND_PLANET' : (state, payload)=> {
+			let filteredList = !!state.apiData ? state.apiData : [];
 			filteredList = filteredList.filter((planet) => {
-				let planetName = planet.name.toLowerCase()
-				return planetName.indexOf(action.value.toLowerCase()) !== -1
+				let planetName = planet.name.toLowerCase();
+				return planetName.indexOf(payload.toLowerCase()) !== -1;
 			});
-			return {...state, apiData: {results: filteredList} }
-		default :
-			return state
+			state.flteredData = filteredList ;
+		},
 
-	}
+		'COUNT_ADD' : (state) => {
+			state.count = ++state.count;
+		}
+};
 
-}
-export default todoApp;
+
+export default withProduce(commonState, reducer);

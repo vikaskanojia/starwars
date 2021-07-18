@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Form , Button, Card, Alert} from 'react-bootstrap';
 
+import withAUth from './withAuth'
+
 class Login extends Component {
     constructor(props){
         super(props)
@@ -80,8 +82,11 @@ const mapDispatchToProp = (dispatch) => {
             event.preventDefault();
             event.stopPropagation(); 
             dispatch({
-                userDetails: {userName : event.target['userName'].value, password: event.target['password'].value },
-                type : 'LOGIN_USER'
+                type : 'LOGIN_USER',
+                userDetails: {
+                    userName : event.target['userName'].value, 
+                    password: event.target['password'].value 
+                },
             })
         
         }

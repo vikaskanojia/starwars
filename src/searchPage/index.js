@@ -1,20 +1,10 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Form , Spinner, Col, Card} from 'react-bootstrap';
+import { Form , Spinner, Col} from 'react-bootstrap';
 
 class Search extends Component {
     constructor(props){
         super(props);
-
-        this.state = {
-            ...props,
-            planetList : null
-        }
-        
-    }
-
-    static getDerivedStateFromProps(props, state) {     
-        return { planet_list: props.planet_list};
     }
 
     componentDidMount() {
@@ -22,12 +12,12 @@ class Search extends Component {
             this.props.history.push('/');
             return
         }
-        this.state.SearchPlanet();
+        this.props.SearchPlanet();
     }
 
     render(){
-            const renderPLanetList = this.state.planet_list
-            ? this.state.planet_list.map((e, i) => {
+            const renderPLanetList = !!this.props.planet_list
+            ? this.props.planet_list.map((e, i) => {
             return ( 
                         <div key={i} className='planet col mx-1'>
                             <strong style={{fontSize : '1em' }} >{e.name}</strong>
@@ -38,12 +28,15 @@ class Search extends Component {
 
             const form = (<Form.Row>
                             <Col>
-                                <Form.Control type="text" name="search" placeholder="Search Planet" onChange={this.state.searchList} />
+                                <Form.Control type="text" name="search" placeholder="Search Planet" 
+                                onChange={this.props.searchList} 
+                                />
                             </Col>
             </Form.Row>);
 
         return (
             <div className="container-fluid px-0">
+                --- {this.props.count}
                 <div className="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
                 <h5 className="my-0 mr-md-auto font-weight-normal">Star Wars</h5>
                 <button className="btn btn-outline-primary" onClick={this.props.logOut}>Log Out</button>
@@ -61,6 +54,7 @@ class Search extends Component {
                         </div>
                     </div>
                 </div>
+                <button onClick={this.props.counts}>Increse</button>
             </div>
         );
     }
@@ -68,12 +62,19 @@ class Search extends Component {
 
 const mapStateToProp = state => {
     return {
-        planet_list: !!state.apiData ? state.apiData.results : '',
+        count : state.count,
+        planet_list: state.flteredData,
     }
 }
 
 const mapDispatchToProp = (dispatch, state) => {
     return {
+        counts: () => {
+            dispatch({
+                type: 'COUNT_ADD'
+            })
+        },
+
         SearchPlanet : (event) => {
             dispatch({
                 type : 'SEARCH_PLANET'
@@ -88,7 +89,7 @@ const mapDispatchToProp = (dispatch, state) => {
         searchList:  (event)=> {
                 dispatch({
                     type : 'FIND_PLANET',
-                    value : event.target.value
+                    payload : event.target.value
                 })
             }  
         }
